@@ -1,0 +1,4 @@
+# Calibration written by the PC simulator (stands for the Arduino EEPROM)
+scale_eeprom.json
+__pycache__/
+.venv/
