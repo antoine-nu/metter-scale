@@ -38,6 +38,7 @@ tests/
 docs/
   protocol-ng-rie.md      synthèse du protocole de la carte et écarts constatés avec la doc
   hardware.md             matériel, alimentation, câblage
+  shopping-list.md        liste de courses
   calibration.md          principe et procédure de calibrage
   display-behaviour.md    spécification de l'afficheur et de la machine à états (référence pour l'Arduino)
   measurements/           relevés faits sur la vraie carte

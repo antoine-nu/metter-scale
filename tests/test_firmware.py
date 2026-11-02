@@ -119,8 +119,9 @@ w.run(10, jitter_g=80)
 check("leaning left: locked value does not change", len(w.trace) - before, 0)
 w.load = [56000, 56000]
 check("112 kg person", w.run(8, jitter_g=80), " 112")
-w.load = [95000, 5000]
-check("one load cell overloaded", w.run(1, jitter_g=80), "  OL")
+w.load = [85000, 5000]
+check("overload shorter than 1 s: not shown", w.run(0.8, jitter_g=80) != "  OL", True)
+check("overload lasting 1 s: OL", w.run(0.4, jitter_g=80), "  OL")
 w.load = [0, 0]
 check("step off", w.run(2), "   0")
 check("comm lost 0.6 s keeps display", w.run(0.6, comm_ok=False), "   0")
@@ -154,8 +155,11 @@ w = World(eeprom)
 w.run(2)
 w.load = [0, 20000]
 w.run(0.2)
-w.load = [40000, 40000]
+w.load = [0, 92000]
+w.run(0.6)
+w.load = [46000, 46000]
 w.run(5, jitter_g=80)
+check("whole weight on one foot for 0.6 s at step-on: no OL", "  OL" in w.trace, False)
 w.load = [0, 20000]
 w.run(0.2)
 w.load = [0, 0]

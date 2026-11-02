@@ -24,7 +24,8 @@ dépasser 70 kg. La surcharge admissible est souvent de 150 % (à vérifier sur 
 
 - À faire : une **butée mécanique** sous chaque peson (vis de réglage avec un petit jeu). C'est la seule vraie
   protection.
-- Logiciel : l'afficheur montre `  OL` dès qu'un peson dépasse 90 kg (près de 2 fois sa charge nominale). C'est un avertissement tardif, pas une protection.
+- Logiciel : l'afficheur montre `  OL` quand un peson dépasse 80 kg pendant plus d'1 s (une montée sur un pied ne le déclenche pas). C'est un
+  avertissement, pas une protection.
 
 ## Carte Mettler Toledo NG-RIE
 

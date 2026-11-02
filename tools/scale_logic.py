@@ -26,7 +26,9 @@ MAX_MEASURE_S = 6.5
 RELEASE_KG = 1.0
 BLINK_COUNT = 2
 BLINK_PHASE_S = 0.2
-OVERLOAD_PAD_KG = 90.0
+OVERLOAD_PAD_KG = 80.0
+# Stepping on with one foot briefly loads one cell: only a lasting overload is shown.
+OVERLOAD_PERSIST_S = 1.0
 
 # Zero tracking absorbs the slow drift of the load cells while the scale is empty.
 ZERO_TRACK_KG = 0.3
@@ -144,6 +146,7 @@ class ScaleFirmware:
         self.measure_totals = []
         self.next_refresh = 0.0
         self.idle_since = None
+        self.overload_since = None
         self.message = None
         self.message_start = 0.0
         self.message_until = 0.0
@@ -232,13 +235,19 @@ class ScaleFirmware:
         self.presses = PressDetector()
         self.left_presses.clear()
         self.idle_since = None
+        self.overload_since = None
         self.state = "WEIGH"
 
     def _weigh(self, raw, now: float) -> str:
         pad_kg = self.pad_kg(raw)
         if max(pad_kg) > OVERLOAD_PAD_KG:
-            self._reset_measure()
-            return OVERLOAD
+            if self.overload_since is None:
+                self.overload_since = now
+            if now - self.overload_since >= OVERLOAD_PERSIST_S - 1e-6:
+                self._reset_measure()
+                return OVERLOAD
+        else:
+            self.overload_since = None
         if self.presses.update(pad_kg, now) == "L":
             self.left_presses.append(now)
             if len(self.left_presses) == CAL_TRIGGER_PRESSES and now - self.left_presses[0] <= CAL_TRIGGER_WINDOW_S:
