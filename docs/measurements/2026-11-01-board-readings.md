@@ -63,3 +63,13 @@ Avec ces gains, la personne pesait **168 kg**, ce qui est peu plausible. Hypoth�
 
 Un second essai avec le calibrage du simulateur a affiché environ **96 kg**. Le poids réel de la personne n'a pas
 encore été comparé à une balance de référence : la justesse absolue reste à valider.
+
+## Répétabilité (2 novembre 2026)
+
+Avec le simulateur calibré, plusieurs montées successives de la même personne se sont figées à 93,4, 93,3 puis
+93,2 kg : ±0,1 kg, soit la limite d'un affichage au dixième. En réponse :
+
+- moyenne de la valeur figée allongée de 2 s à 3,6 s ;
+- suivi automatique du zéro quand la balance est vide.
+
+Pas de « mémoire » de la pesée précédente : on garde la mesure réelle.

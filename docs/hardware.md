@@ -3,15 +3,14 @@
 ## Vue d'ensemble
 
 ```
- [Bloc 12 V continu] --+--> Carte NG-RIE <-- peson gauche (voie 1), peson droit (voie 0)
-                       |        | A/B RS-485
-                       |   [module MAX485]
-                       |        | TX / RX / DE-RE
-                       +--> Arduino (VIN) ----> afficheur TM1637 4 chiffres (CLK, DIO)
-                                  +-----------> EEPROM interne : gains de calibrage
+ [4 piles AA] --> [interrupteur à verrouillage] --> [élévateur 12 V] --+--> Carte NG-RIE <-- pesons
+                    ^ ON (réveil)    ^ OFF                             |        | A/B RS-485
+   capteur de vibration              |                                 |   [module MAX485]
+                                     +---------- broche Arduino        |        | TX / RX / DE-RE
+                                                                       +--> Arduino (VIN) --> TM1637
 ```
 
-Toutes les masses (GND) sont communes : carte, Arduino, module RS-485.
+Toutes les masses (GND) sont communes : piles, carte, Arduino, module RS-485.
 
 ## Pesons et mécanique
 
@@ -51,13 +50,44 @@ un périphérique USB.
 Couleurs à confirmer sur la fiche FTDI. Si la carte ne répond pas, inverser A et B : tous les fabricants ne
 nomment pas ces bornes de la même façon.
 
-## Montage final (à acheter)
+## Montage final
 
-| Élément | Choix proposé | Pourquoi |
+| Élément | Choix | Pourquoi |
 |---|---|---|
-| Microcontrôleur | Arduino **Nano Every** | 2ᵉ port série matériel (Serial1) qui laisse l'USB libre pour le débogage ; VIN accepte jusqu'à 21 V |
-| Interface RS-485 | module **MAX485** « TTL vers RS485 » (5 V) | standard, environ 2 €. DE et RE reliés ensemble sur une broche |
-| Afficheur | module **TM1637** 4 chiffres | 2 fils, environ 2 €, sait afficher `CAL`, `PL L`, `donE`, `Err`, `OL` |
-| Alimentation | le bloc 12 V de la carte | l'Arduino est alimenté par VIN. Vérifier que le bloc sort bien du **12 V continu** |
+| Microcontrôleur | Arduino **Nano Every** | 2ᵉ port série matériel (Serial1) qui laisse l'USB libre pour le débogage ; VIN accepte de 7 à 21 V |
+| Interface RS-485 | module **MAX485** « TTL vers RS485 » (5 V), à acheter | standard, environ 2 €. DE et RE reliés ensemble sur une broche |
+| Afficheur | module **TM1637** 4 chiffres, à acheter | 2 fils, environ 2 €. Le 5461AS disponible marcherait aussi, mais demande 12 broches, 8 résistances et un rafraîchissement permanent |
 
-Consommation estimée : carte + Arduino + afficheur, moins de 200 mA. Un bloc de 1 A suffit.
+## Alimentation sur piles
+
+- **4 piles AA** (6 V neuves, environ 4 V en fin de vie), alcalines ou NiMH rechargeables.
+- Un **élévateur de tension** réglé sur 12 V (module MT3608, environ 2 €). Il accepte de 2 à 24 V en entrée.
+- Ce 12 V alimente **à la fois la carte et l'Arduino** : la carte veut 12 V, et la broche VIN de la Nano Every
+  accepte de 7 à 21 V. L'Arduino consomme quelques dizaines de mA, la carte probablement un peu plus : à mesurer.
+
+À vérifier :
+
+- **La consommation réelle** : multimètre en série sur le 12 V, balance allumée. Elle fixe l'autonomie : avec
+  environ 1,5 W et 30 s par pesée, compter de l'ordre de 1 000 pesées par jeu de piles.
+- **Le bruit de mesure** : un élévateur découpe le courant. Comparer `ng_rie_probe.py watch` sur le bloc secteur
+  et sur l'élévateur.
+
+## Réveil par coup de pied et arrêt automatique
+
+- Un **interrupteur électronique à verrouillage** entre les piles et l'élévateur, par exemple un *Pololu Mini
+  Pushbutton Power Switch* (version LV, jusqu'à 20 V), qui ne consomme presque rien quand il est éteint.
+- Un **capteur de vibration** fixé sous la planche déclenche la mise en marche. Un ressort (type SW-18010P) est le
+  plus sensible.
+- L'Arduino **coupe lui-même l'alimentation** par une broche après 30 s à `0`, après avoir enregistré le zéro en
+  EEPROM.
+
+Points d'attention :
+
+- **Le capteur doit seulement allumer.** Sur ces modules, l'entrée « bouton » est souvent une bascule
+  marche/arrêt : un coup en montant sur la balance l'éteindrait. Il faut brancher le capteur sur une entrée
+  « marche seulement » (ON). Vérifier sur la fiche du modèle choisi avant l'achat.
+- **Capteur à bille SW-520D (disponible)** : c'est un capteur d'inclinaison. Monté légèrement penché, juste à la
+  limite où la bille bascule, un choc la fait sauter et ferme brièvement le contact, ce qui peut suffire comme
+  détecteur de coup de pied. Il est moins sensible et moins fiable qu'un capteur à ressort, mais il permet
+  d'essayer. Il doit être **ouvert au repos**, sinon l'entrée ON resterait active et empêcherait l'arrêt.
+- Pas de capteur à mercure : toxique, et interdit à la vente.

@@ -6,11 +6,12 @@ RS-485 et affiche le poids sur un **afficheur 7 segments de 4 chiffres**.
 
 ## Cas d'usage
 
-- **Se peser** : on met sous tension, la balance fait sa tare automatiquement et affiche `0`. On monte : le poids
-  s'affiche au dixième de kg (`67.4`), en kg entiers à partir de 100 kg (`112`). Il se fige après environ 2 s et
-  clignote 2 fois pour signaler que la mesure est terminée.
-- **Calibrer** : on met sous tension en étant debout sur la balance, on attend le `0`, puis on descend. La balance
-  passe en mode calibrage et guide l'utilisateur pour poser une masse de 1 kg à gauche puis à droite.
+- **Se peser** : un coup de pied réveille la balance (prévu), qui fait sa tare et affiche `0`. On monte : le poids
+  s'affiche au dixième de kg (`67.4`), en kg entiers à partir de 100 kg (`112`). Il se fige après environ 4 s et
+  clignote 2 fois pour signaler que la mesure est terminée. La balance s'éteint seule après 30 s à `0`.
+- **Calibrer** : sur la balance vide, 3 appuis brefs de la main sur le peson gauche. On règle la masse de calibrage
+  en appuyant à droite (+) ou à gauche (−), puis la balance guide l'utilisateur pour poser cette masse à gauche
+  puis à droite.
 
 Détails : [comportement de l'afficheur](docs/display-behaviour.md) et [calibrage](docs/calibration.md).
 
@@ -29,7 +30,8 @@ Détails : [comportement de l'afficheur](docs/display-behaviour.md) et [calibrag
 ```
 tools/
   ng_rie_probe.py         outil de diagnostic de la carte (lecture seule) : info, watch
-  scale_firmware_sim.py   simulation sur PC du futur firmware Arduino, pilotée par la vraie carte
+  scale_logic.py          logique de la balance, sans entrée/sortie : c'est elle qui sera portée sur l'Arduino
+  scale_firmware_sim.py   fait tourner scale_logic.py sur PC avec la vraie carte, dessine l'afficheur
 tests/
   test_probe.py           tests hors ligne des trames et du décodage
   test_firmware.py        scénarios hors ligne de la machine à états (balance simulée)
@@ -48,8 +50,15 @@ pip install -r requirements.txt
 
 python tools/ng_rie_probe.py COM7 info            # identité et configuration de la carte
 python tools/ng_rie_probe.py COM7 watch --channels 6   # poids bruts de chaque voie, en continu
-python tools/scale_firmware_sim.py COM7 --mass 1000    # la balance telle qu'elle fonctionnera
+python tools/scale_firmware_sim.py COM7          # la balance telle qu'elle fonctionnera
+python tools/scale_firmware_sim.py COM7 --plain  # idem, une ligne par changement d'affichage (à copier-coller)
 ```
+
+Le simulateur dessine l'afficheur 7 segments à un endroit fixe du terminal, avec sous lui l'état interne et le
+poids calculé. Les messages (EEPROM enregistrée, carte introuvable...) défilent au-dessus. Il faut un terminal qui
+comprend les séquences ANSI (Windows Terminal, PowerShell, VS Code, tout terminal Linux ou macOS) ; sinon,
+utiliser `--plain`. Après 30 s à `0`, la balance « s'éteint » et le programme s'arrête : le relancer revient à la
+réveiller.
 
 Le port est `COMx` sous Windows (Gestionnaire de périphériques) ou `/dev/ttyUSB0` sous Linux. Les deux outils
 n'envoient **que des commandes de lecture** à la carte : ils ne modifient ni sa configuration ni son calibrage. Le
