@@ -8,7 +8,7 @@ Choix : **réutiliser le stock** au maximum (voir [hardware.md](hardware.md)). L
 |---|---|
 | Carte Mettler Toledo NG-RIE et 2 pesons de 50 kg | mesure |
 | **Arduino UNO R3** (x2) | cerveau de la balance (le 2ᵉ en secours ou pour les essais) |
-| Afficheur **5461AS** 4 chiffres, cathode commune | affichage |
+| Afficheur 5461AS | non utilisé (remplacé par un TM1637) |
 | Capteur à bille **SW-520D** | réveil par coup de pied (premier essai) |
 | Bloc secteur 12 V | alimentation de la balance, puis du banc de test |
 | Câble FTDI USB-RS485-WE-5000-BT | banc de test sur PC (pas dans le montage final) |
@@ -18,23 +18,21 @@ Choix : **réutiliser le stock** au maximum (voir [hardware.md](hardware.md)). L
 
 | Élément | Qté | Pour |
 |---|---|---|
-| Résistances de 1 kΩ | 8 | segments de l'afficheur |
 | Câble USB A-B (« imprimante ») | 1 | téléverser le programme dans l'UNO, récupérer l'historique |
 | Câbles Dupont, plaque à essais | | essais |
-| MOSFET canal P (IRF9540, IRF4905...), NPN (BC547, 2N2222), diode 1N4148, condensateur 47 µF, résistances 100 Ω, 10 kΩ, 47 kΩ, 100 kΩ | 1 de chaque | verrou d'alimentation fait maison (option A). S'il manque des pièces, voir l'option B ci-dessous |
 | Plaque à pastilles, borniers à vis, gaine thermorétractable | | montage définitif |
-| Multimètre, fer à souder | | brochage de l'afficheur, réglages, mesures |
+| Multimètre, fer à souder | | réglages, mesures, montage |
 
 ## À acheter
 
 | Élément | Qté | Prix | Indispensable ? |
 |---|---|---|---|
 | **Module MAX485** « TTL vers RS485 », 5 V | 2 | ~2 € pièce | **Oui** : sans lui, l'Arduino ne peut pas parler à la carte. Le 2ᵉ en secours, ils sont souvent vendus par lots |
-| Pololu Mini Pushbutton Power Switch LV | 1 | ~6 € | Seulement si le verrou fait maison n'est pas possible avec le stock. Vérifier qu'il a des entrées ON et OFF séparées |
+| **Module TM1637** 4 chiffres | 2 | ~2 € pièce | **Oui. Prendre un modèle avec un point décimal à chaque chiffre** : beaucoup de TM1637 sont des versions « horloge » avec seulement `:` au milieu, qui ne peuvent pas afficher `67.4`. Vérifier sur la photo |
+| **Pololu Mini Pushbutton Power Switch LV** | 1 | ~6 € | **Oui**, pour le réveil par coup de pied. Vérifier qu'il a des entrées ON et OFF séparées |
 | Capteur de vibration à ressort SW-18010P | 3 | <1 € pièce | Seulement si le SW-520D ne réveille pas la balance de façon fiable |
 | Élévateur de tension MT3608 réglable | 2 | ~2 € pièce | Plus tard, pour le passage sur piles. Régler la sortie sur 12 V avant de brancher quoi que ce soit |
 | Boîtier 4 piles AA avec fils, 4 piles | 1 | ~2 € | Plus tard, pour le passage sur piles |
-| MOSFET canal P « logic level » (AO3401, IRLML6402) | 2 | <1 € | Plus tard, pour le verrou fait maison côté piles |
 
 ## Mécanique
 

@@ -30,7 +30,7 @@ Le point décimal ne prend pas de case : ` 67.4` occupe 4 chiffres.
 
 ## Mise sous tension
 
-- La carte et l'Arduino démarrent : `----`.
+- La carte et l'Arduino démarrent : `----` pendant environ 2 à 3 s (temps de démarrage de la carte Mettler).
 - Dès que la lecture est stable à 2 kg près :
   - si la charge est proche du **zéro enregistré en EEPROM** (moins de 2 kg d'écart), ou s'il n'y a pas encore de
     zéro enregistré, la balance **refait sa tare** et affiche `0` ;

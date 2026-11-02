@@ -73,3 +73,8 @@ Avec le simulateur calibré, plusieurs montées successives de la même personne
 - suivi automatique du zéro quand la balance est vide.
 
 Pas de « mémoire » de la pesée précédente : on garde la mesure réelle.
+
+## Temps de démarrage de la carte
+
+Entre la mise sous tension du 12 V et le retour des poids dans `watch` : **2 à 3 s**. C'est le délai minimal entre
+le réveil de la balance et l'affichage du `0`.

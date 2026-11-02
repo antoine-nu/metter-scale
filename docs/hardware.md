@@ -3,17 +3,17 @@
 ## Vue d'ensemble
 
 ```
- [alimentation 12 V] --> [verrou d'alimentation] --+--> Carte NG-RIE <-- pesons
-                          ^ ON        ^ maintien   |        | A/B RS-485
-   capteur de vibration --+           |            |   [module MAX485]
-   (coup de pied)                     |            |        | RO / DI / DE-RE
-                                      +---- A4 ----+--> Arduino UNO R3 (VIN) --> afficheur 5461AS
+ [alimentation 12 V] --> [module Pololu] --+--> Carte NG-RIE <-- pesons
+                          ^ ON     ^ OFF   |        | A/B RS-485
+   capteur de vibration --+        |       |   [module MAX485]
+   (coup de pied)                  |       |        | RO / DI / DE-RE
+                                   +-- A4 -+--> Arduino UNO R3 (VIN) --> afficheur TM1637
 ```
 
 Toutes les masses (GND) sont communes : alimentation, carte, Arduino, module RS-485.
 
 Dans un premier temps, l'alimentation 12 V est le bloc secteur. Le passage sur piles (4 AA + élévateur 12 V) se
-fera ensuite : le verrou se placera alors côté piles, avant l'élévateur (voir plus bas).
+fera ensuite : le module Pololu se placera alors côté piles, avant l'élévateur (voir plus bas).
 
 ## Pesons et mécanique
 
@@ -56,13 +56,14 @@ nomment pas ces bornes de la même façon.
 
 ## Montage final : Arduino UNO R3
 
-Choix fait pour réutiliser le stock. Seul le module MAX485 est à acheter (voir [liste de courses](shopping-list.md)).
+Choix fait pour réutiliser le stock. À acheter : le module MAX485, l'afficheur TM1637 et le module Pololu (voir
+[liste de courses](shopping-list.md)).
 
 | Élément | Choix | Remarques |
 |---|---|---|
 | Microcontrôleur | **Arduino UNO R3** (en stock) | Démarre en moins d'1 s. 1 seul port série matériel (D0/D1), gardé pour l'USB : le RS-485 passe par un port série logiciel |
 | Interface RS-485 | **module MAX485** « TTL vers RS485 » (5 V), **à acheter** | Le câble FTDI ne peut pas se brancher sur un Arduino |
-| Afficheur | **5461AS** (en stock), 4 chiffres à cathode commune | 12 broches et 8 résistances ; l'Arduino allume les chiffres l'un après l'autre en permanence (bibliothèque SevSeg) |
+| Afficheur | **module TM1637** 4 chiffres, **à acheter**, avec un point décimal à chaque chiffre | 2 fils de données ; le module gère seul l'allumage des chiffres |
 | Historique des pesées | EEPROM interne de 1 Ko | environ 490 pesées, récupérées par USB |
 
 ### Brochage proposé
@@ -72,76 +73,37 @@ Choix fait pour réutiliser le stock. Seul le module MAX485 est à acheter (voir
 | D0, D1 | USB (téléversement, récupération de l'historique) : ne rien brancher |
 | D8 (RX), D9 (TX) | RS-485 : D8 ← RO du MAX485, D9 → DI. Bibliothèque AltSoftSerial, plus fiable que SoftwareSerial (elle impose D8/D9 et rend D10 inutilisable en PWM) |
 | D7 | DE et RE du MAX485, reliés ensemble (1 = émission, 0 = réception) |
-| D2, D3, D4, D5, D6, D11, D12, D13 | segments a, b, c, d, e, f, g, point de l'afficheur, chacun **à travers une résistance de 1 kΩ** |
-| A0, A1, A2, A3 | cathodes communes des chiffres 1 à 4 |
-| A4 | maintien du verrou d'alimentation (1 = rester allumé, 0 = s'éteindre) |
-| A5, D10 | libres |
-
-Avec 1 kΩ, un segment consomme environ 3 mA, donc au plus 24 mA sur la broche d'un chiffre (`8.` allumé). C'est
-dans les limites de l'UNO. Avec des résistances plus faibles, l'affichage serait plus lumineux, mais il faudrait
-des transistors sur les chiffres. La LED de D13 clignotera avec le segment « point » : sans conséquence.
-
-Le brochage exact de l'afficheur 5461AS (quelle patte correspond à quel segment) sera vérifié au multimètre ou avec
-une pile et une résistance avant de souder.
+| D2, D3 | CLK et DIO du TM1637 |
+| A4 | entrée OFF du module Pololu (une impulsion éteint tout) |
+| autres | libres |
 
 ### Alimentation de l'UNO
 
 La broche VIN de l'UNO accepte de 7 à 12 V : elle se branche directement sur le 12 V de la carte. Le régulateur de
 l'UNO chauffe un peu, ce qui est sans conséquence vu que la balance ne reste allumée que quelques dizaines de
-secondes.
+secondes. Le TM1637 et le MAX485 sont alimentés par le 5 V de l'UNO.
 
 ## Réveil par coup de pied et arrêt automatique
 
-Principe : un **verrou d'alimentation** coupe tout quand la balance dort, sans aucune consommation. Un coup de pied
-fait vibrer un capteur, qui allume le verrou. L'Arduino démarre et **maintient** le verrou par la broche A4 ; après
-30 s à `0`, il enregistre le zéro en EEPROM puis relâche A4, et tout s'éteint.
+Principe : le **module Pololu Mini Pushbutton Power Switch** (version LV) coupe tout quand la balance dort, en ne
+consommant presque rien. Un coup de pied fait vibrer un capteur, qui envoie une impulsion sur l'entrée ON du module :
+tout s'allume. Après 30 s à `0`, l'Arduino enregistre le zéro en EEPROM puis envoie une impulsion sur l'entrée OFF
+par la broche A4 : tout s'éteint.
 
-Le capteur ne ferme son contact que quelques millisecondes : le verrou doit rester allumé assez longtemps (environ
-1 s) pour que l'Arduino démarre et prenne le relais.
+Délai entre le coup de pied et le `0` : environ **2 à 3 s**, le temps de démarrage mesuré de la carte Mettler
+(l'Arduino, lui, démarre en moins d'1 s).
 
-### Option A : verrou fait maison (composants de stock)
+Points d'attention :
 
-```
- +12 V (toujours présent)
-   |                     |
-   |                  100 kΩ
-   |                     |
- capteur                 +-------------- grille du MOSFET canal P
-   |                     |               (source sur +12 V, drain vers la carte et VIN de l'UNO)
- 100 Ω               collecteur
-   |                   [NPN]
-   +--- 47 µF --- GND    |
-   |                   base -------+
-   +--- 47 kΩ -----------+         |
-                                 10 kΩ
-                       émetteur    |
-                         |       diode 1N4148
-                        GND        |
-                                  A4 de l'UNO
-```
-
-- Au repos : la résistance de 100 kΩ tient la grille du MOSFET au +12 V, il est bloqué, rien n'est alimenté.
-- Coup de pied : le capteur charge le condensateur de 47 µF en un instant. Celui-ci se décharge lentement
-  (47 µF × 47 kΩ, environ 2 s) dans la base du transistor NPN, qui tire la grille vers la masse : le MOSFET
-  conduit, tout s'allume.
-- L'Arduino met A4 à 1 dès le démarrage : le transistor reste passant même quand le condensateur est vide.
-- A4 à 0 : tout s'éteint.
-
-Composants : un MOSFET **canal P** supportant 12 V et quelques centaines de mA (par exemple IRF9540, IRF4905), un
-NPN courant (BC547, 2N2222), résistances de 100 Ω, 10 kΩ, 47 kΩ et 100 kΩ, un condensateur de 47 µF, une diode
-(1N4148). Les valeurs seront ajustées pendant les essais.
-
-### Option B : module tout fait
-
-Un *Pololu Mini Pushbutton Power Switch* (version LV, jusqu'à 20 V, environ 6 €). Vérifier sur sa fiche qu'il a une
-entrée « marche seulement » (ON) pour le capteur et une entrée « arrêt » (OFF) pour l'Arduino : son bouton est une
-bascule marche/arrêt, qu'un coup en montant sur la balance suffirait à éteindre.
+- **Le capteur va sur l'entrée ON**, pas sur le bouton : le bouton est une bascule marche/arrêt, qu'un coup en
+  montant sur la balance suffirait à éteindre. Vérifier le câblage exact de ON et OFF sur la fiche du module.
+- Le module accepte jusqu'à 20 V : il convient au bloc 12 V comme aux piles.
 
 ### Capteur de vibration
 
 - **SW-520D (en stock)** : c'est un capteur d'inclinaison. Monté légèrement penché, juste à la limite où la bille
   bascule, un choc la fait sauter et ferme brièvement le contact. À essayer en premier. Il doit être **ouvert au
-  repos**, sinon la balance ne s'éteindrait jamais.
+  repos**, sinon l'entrée ON resterait active.
 - **SW-18010P** (à ressort, moins de 1 €) : plus sensible, si le SW-520D ne suffit pas.
 - Pas de capteur à mercure : toxique, et interdit à la vente.
 
@@ -149,11 +111,8 @@ bascule marche/arrêt, qu'un coup en montant sur la balance suffirait à éteind
 
 - **4 piles AA** (6 V neuves, environ 4 V en fin de vie) et un **élévateur de tension** réglé sur 12 V (module
   MT3608, à acheter). **Régler sa sortie sur 12 V au multimètre avant de brancher quoi que ce soit.**
-- Le verrou d'alimentation se place **côté piles, avant l'élévateur** : un élévateur consomme un peu même sans
-  charge, ce qui viderait les piles en quelques mois s'il restait branché en permanence.
-- Côté piles, la tension n'est plus que de 4 à 6 V : le MOSFET canal P du verrou fait maison doit alors être un
-  modèle « logic level », qui conduit franchement avec seulement 4 V sur sa grille (par exemple AO3401 ou
-  IRLML6402). Un IRF9540 ne conviendrait plus. Le module Pololu, lui, fonctionne dès 2,2 V.
+- Le module Pololu se place **côté piles, avant l'élévateur** : un élévateur consomme un peu même sans charge, ce
+  qui viderait les piles en quelques mois s'il restait branché en permanence. Le module fonctionne dès 2,2 V.
 
 À vérifier :
 
@@ -161,4 +120,4 @@ bascule marche/arrêt, qu'un coup en montant sur la balance suffirait à éteind
   environ 1,5 W et 30 s par pesée, compter de l'ordre de 1 000 pesées par jeu de piles.
 - **Le bruit de mesure** : un élévateur découpe le courant. Comparer `ng_rie_probe.py watch` sur le bloc secteur
   et sur l'élévateur.
-- **Le temps de démarrage de la carte Mettler** : c'est lui qui fixera le délai entre le coup de pied et le `0`.
+- **Le temps de démarrage de la carte Mettler** sur piles : 2 à 3 s mesurés sur le bloc secteur.
