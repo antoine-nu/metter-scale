@@ -22,6 +22,9 @@ Détails : [comportement de l'afficheur](docs/display-behaviour.md) et [calibrag
 | Lecture et compréhension du protocole de la carte | fait ([protocole](docs/protocol-ng-rie.md)) |
 | Dialogue PC ↔ carte via câble USB/RS-485 | fait, validé sur la vraie carte |
 | Logique de la balance simulée sur PC (tare, pesée, calibrage, affichage) | fait, en cours de validation sur la vraie carte |
+| Choix du matériel : Arduino UNO R3, afficheur 5461AS, module MAX485 | fait ([matériel](docs/hardware.md), [liste de courses](docs/shopping-list.md)) |
+| Historique des pesées (EEPROM de l'UNO, récupération par USB, graphe par personne sur PC) | à faire |
+| Réveil par coup de pied (verrou d'alimentation + capteur de vibration) | à faire |
 | Firmware Arduino | à faire |
 | Mécanique (butées de surcharge, boîtier) | à faire |
 
