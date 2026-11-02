@@ -26,7 +26,7 @@ MAX_MEASURE_S = 6.5
 RELEASE_KG = 1.0
 BLINK_COUNT = 2
 BLINK_PHASE_S = 0.2
-OVERLOAD_PAD_KG = 60.0
+OVERLOAD_PAD_KG = 90.0
 
 # Zero tracking absorbs the slow drift of the load cells while the scale is empty.
 ZERO_TRACK_KG = 0.3

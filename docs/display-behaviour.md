@@ -11,7 +11,7 @@ même logique est implémentée dans `tools/scale_logic.py` (classe `ScaleFirmwa
 | entre −0,2 et +0,2 kg | `   0` |
 | moins de 100 kg (après arrondi au dixième) | ` 67.4`, `  1.0`, ` -1.3` |
 | 99,95 kg et plus | ` 112` (kg entiers) |
-| un peson au-dessus de 60 kg | `  OL` |
+| un peson au-dessus de 90 kg | `  OL` |
 
 Le point décimal ne prend pas de case : ` 67.4` occupe 4 chiffres.
 
@@ -130,7 +130,7 @@ Les écritures sont rares, l'usure de l'EEPROM n'est pas un sujet.
 | `MAX_MEASURE_S` | 6.5 | délai maximum avant de figer |
 | `RELEASE_KG` | 1.0 | écart qui libère une valeur figée |
 | `BLINK_COUNT` / `BLINK_PHASE_S` | 2 / 0.2 | clignotements |
-| `OVERLOAD_PAD_KG` | 60.0 | seuil `OL` par peson |
+| `OVERLOAD_PAD_KG` | 90.0 | seuil `OL` par peson |
 | `ZERO_TRACK_KG` / `ZERO_TRACK_SPREAD_KG` | 0.3 / 0.03 | suivi du zéro |
 | `AUTO_OFF_S` | 30.0 | arrêt automatique |
 | `PRESS_MIN_KG` / `PRESS_RELEASE_KG` / `PRESS_MAX_KG` | 0.5 / 0.3 / 30.0 | détection d'un appui de la main |

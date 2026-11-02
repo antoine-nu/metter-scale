@@ -119,7 +119,7 @@ w.run(10, jitter_g=80)
 check("leaning left: locked value does not change", len(w.trace) - before, 0)
 w.load = [56000, 56000]
 check("112 kg person", w.run(8, jitter_g=80), " 112")
-w.load = [70000, 10000]
+w.load = [95000, 5000]
 check("one load cell overloaded", w.run(1, jitter_g=80), "  OL")
 w.load = [0, 0]
 check("step off", w.run(2), "   0")
